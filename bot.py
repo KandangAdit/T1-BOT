@@ -5,12 +5,15 @@ from eth_account import Account
 from aiohttp import ClientSession, ClientTimeout
 from datetime import datetime
 from colorama import *
-import asyncio, json, random, time, os, pytz
+import asyncio, json, random, time, os, pytz, configparser
 
 wib = pytz.timezone('Asia/Jakarta')
 
 class TOne:
     def __init__(self) -> None:
+        self.config = configparser.ConfigParser()
+        self.config.read('config.ini')
+
         self.ARB_SEPOLIA = { 
             "Ticker": "ARB Sepolia", 
             "ChainId": 421614, 
@@ -51,11 +54,11 @@ class TOne:
         self.proxies = []
         self.proxy_index = 0
         self.account_proxies = {}
-        self.bridge_count = 0
-        self.arb_amount = 0
-        self.base_SEPOLIA_amount = 0
-        self.min_delay = 0
-        self.max_delay = 0
+        self.bridge_count = self.config.getint('main', 'bridge_count')
+        self.arb_amount = self.config.getfloat('bridge', 'arb_amount')
+        self.base_SEPOLIA_amount = self.config.getfloat('bridge', 'base_amount')
+        self.min_delay = self.config.getint('main', 'min_delay')
+        self.max_delay = self.config.getint('main', 'max_delay')
 
     def clear_terminal(self):
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -313,196 +316,6 @@ class TOne:
             )
             await asyncio.sleep(1)
         
-    def print_question(self):
-        while True:
-            try:
-                print(f"{Fore.GREEN + Style.BRIGHT}Select Option:{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}1. Bridge Arb to Base{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}2. Bridge Base to Arb{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}3. Run All Features (Random){Style.RESET_ALL}")
-                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3] -> {Style.RESET_ALL}").strip())
-
-                if option in [1, 2, 3]:
-                    option_type = (
-                        "Bridge Arb to Base" if option == 1 else 
-                        "Bridge Base to Arb" if option == 2 else 
-                        "Run All Features (Random)"
-                    )
-                    print(f"{Fore.GREEN + Style.BRIGHT}{option_type} Selected.{Style.RESET_ALL}")
-                    break
-                else:
-                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2, or 3.{Style.RESET_ALL}")
-            except ValueError:
-                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (1, 2, or 3).{Style.RESET_ALL}")
-        
-        if option == 1:
-            while True:
-                try:
-                    bridge_count = int(input(f"{Fore.YELLOW + Style.BRIGHT}Bridge Count For Each Wallet -> {Style.RESET_ALL}").strip())
-                    if bridge_count > 0:
-                        self.bridge_count = bridge_count
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Bridge Count must be > 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    arb_amount = float(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Arb Sepolia Amount [1 or 0.01 or 0.001, etc in decimals] -> {Style.RESET_ALL}").strip())
-                    if arb_amount > 0:
-                        self.arb_amount = arb_amount
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Arb Sepolia Amount must be > 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a float or decimal number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    min_delay = int(input(f"{Fore.YELLOW + Style.BRIGHT}Min Delay For Each Tx -> {Style.RESET_ALL}").strip())
-                    if min_delay >= 0:
-                        self.min_delay = min_delay
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Min Delay must be >= 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    max_delay = int(input(f"{Fore.YELLOW + Style.BRIGHT}Max Delay For Each Tx -> {Style.RESET_ALL}").strip())
-                    if max_delay >= min_delay:
-                        self.max_delay = max_delay
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Max Delay must be >= Min Delay.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-        
-        elif option == 2:
-            while True:
-                try:
-                    bridge_count = int(input(f"{Fore.YELLOW + Style.BRIGHT}Bridge Count For Each Wallet -> {Style.RESET_ALL}").strip())
-                    if bridge_count > 0:
-                        self.bridge_count = bridge_count
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Bridge Count must be > 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    base_amount = float(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Base Sepolia Amount [1 or 0.01 or 0.001, etc in decimals] -> {Style.RESET_ALL}").strip())
-                    if base_amount > 0:
-                        self.base_SEPOLIA_amount = base_amount
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Base Sepolia Amount must be > 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a float or decimal number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    min_delay = int(input(f"{Fore.YELLOW + Style.BRIGHT}Min Delay For Each Tx -> {Style.RESET_ALL}").strip())
-                    if min_delay >= 0:
-                        self.min_delay = min_delay
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Min Delay must be >= 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    max_delay = int(input(f"{Fore.YELLOW + Style.BRIGHT}Max Delay For Each Tx -> {Style.RESET_ALL}").strip())
-                    if max_delay >= min_delay:
-                        self.max_delay = max_delay
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Max Delay must be >= Min Delay.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-        
-        elif option == 3:
-            while True:
-                try:
-                    bridge_count = int(input(f"{Fore.YELLOW + Style.BRIGHT}Bridge Count For Each Wallet -> {Style.RESET_ALL}").strip())
-                    if bridge_count > 0:
-                        self.bridge_count = bridge_count
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Bridge Count must be > 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    arb_amount = float(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Arb Sepolia Amount [1 or 0.01 or 0.001, etc in decimals] -> {Style.RESET_ALL}").strip())
-                    if arb_amount > 0:
-                        self.arb_amount = arb_amount
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Arb Sepolia Amount must be > 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a float or decimal number.{Style.RESET_ALL}")
-            
-            while True:
-                try:
-                    base_amount = float(input(f"{Fore.YELLOW + Style.BRIGHT}Enter Base Sepolia Amount [1 or 0.01 or 0.001, etc in decimals] -> {Style.RESET_ALL}").strip())
-                    if base_amount > 0:
-                        self.base_SEPOLIA_amount = base_amount
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}ARB Sepolia Amount must be > 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a float or decimal number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    min_delay = int(input(f"{Fore.YELLOW + Style.BRIGHT}Min Delay For Each Tx -> {Style.RESET_ALL}").strip())
-                    if min_delay >= 0:
-                        self.min_delay = min_delay
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Min Delay must be >= 0.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-            while True:
-                try:
-                    max_delay = int(input(f"{Fore.YELLOW + Style.BRIGHT}Max Delay For Each Tx -> {Style.RESET_ALL}").strip())
-                    if max_delay >= min_delay:
-                        self.max_delay = max_delay
-                        break
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Max Delay must be >= Min Delay.{Style.RESET_ALL}")
-                except ValueError:
-                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number.{Style.RESET_ALL}")
-
-        while True:
-            try:
-                print(f"{Fore.WHITE + Style.BRIGHT}1. Run With Free Proxyscrape Proxy{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}2. Run With Private Proxy{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}3. Run Without Proxy{Style.RESET_ALL}")
-                choose = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3] -> {Style.RESET_ALL}").strip())
-
-                if choose in [1, 2, 3]:
-                    proxy_type = (
-                        "With Free Proxyscrape" if choose == 1 else 
-                        "With Private" if choose == 2 else 
-                        "Without"
-                    )
-                    print(f"{Fore.GREEN + Style.BRIGHT}Run {proxy_type} Proxy Selected.{Style.RESET_ALL}")
-                    break
-                else:
-                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2 or 3.{Style.RESET_ALL}")
-            except ValueError:
-                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (1, 2 or 3).{Style.RESET_ALL}")
-
-        return option, choose
-
     async def process_perform_bridge(self, account: str, address: str, option: str, use_proxy: bool):
         if option == "Arbitrum to Base":
             explorer = self.ARB_SEPOLIA["Explorer"]
@@ -681,7 +494,8 @@ class TOne:
             with open('accounts.txt', 'r') as file:
                 accounts = [line.strip() for line in file if line.strip()]
 
-            option, use_proxy_choice = self.print_question()
+            option = self.config.getint('main', 'option')
+            use_proxy_choice = self.config.getint('proxy', 'use_proxy')
 
             use_proxy = False
             if use_proxy_choice in [1, 2]:
