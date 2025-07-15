@@ -1,0 +1,7 @@
+web3
+eth-account
+eth-utils
+eth-abi
+aiohttp
+colorama
+pytz
